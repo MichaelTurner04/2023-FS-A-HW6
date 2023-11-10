@@ -68,9 +68,11 @@ void acquirePowerUp(point power_x, point power_y, point player_x, point player_y
       if(((power_x.m_XCoord + power_y.m_YCoord) % 2) == 0){// even
         humanLives += (power_x.m_XCoord + power_y.m_YCoord);
         powerUp ="lives";
+        return;
       }else if(((power_x.m_XCoord + power_y.m_YCoord) % 2) == 1){//odd
         bullets += (power_x.m_XCoord + power_y.m_YCoord);
         powerUp ="bullets";
+        return;
       }
     }else if(powerup_type ==5){//sheild powerup
       powerUp ="sheild";

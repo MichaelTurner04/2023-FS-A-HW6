@@ -78,6 +78,7 @@ void acquirePowerUp(point power_x, point power_y, point player_x, point player_y
       return;
     }
   }
+  cout << "You did not acquire the powerup. "<< endl;
   powerUp = "None";
   return;
 }

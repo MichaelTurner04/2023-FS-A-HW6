@@ -4,16 +4,20 @@
 using namespace std;
 
  
-void generatePlayerPosition(point & player_x, point &player_y){
-  
+void generatePlayerPosition(point & player_x, point &player_y, point &player_last_x, point &player_last_y){
+   player_last_x = player_x;
+   player_last_y = player_y;
   player_x.m_XCoord = rand() % 4;
   player_y.m_YCoord = rand() %4;
 }
 
-void generateAlienPosition(point & alien_x, point &alien_y){
-  
+void generateAlienPosition(point & alien_x, point &alien_y, point player_x, point player_y){
   alien_x.m_XCoord = rand() % 4;
   alien_y.m_YCoord = rand() %4;
+  while( (player_x.m_XCoord == alien_x.m_XCoord) && (player_y.m_YCoord == alien_y.m_YCoord)){ //checks if alien and player are on the same spot
+    alien_x.m_XCoord = rand() % 4;
+    alien_y.m_YCoord = rand() %4;
+  }
 }
  
 void generatePowerUpPosition(point & power_x, point &power_y){
@@ -22,7 +26,7 @@ void generatePowerUpPosition(point & power_x, point &power_y){
   power_y.m_YCoord = rand() %4;
 }
 
-void shootAlien(point guess_x, point guess_y, point alien_x, point alien_y, int &alienLives, int &bullets, int &humanLives){
+void shootAlien(point guess_x, point guess_y, point alien_x, point alien_y, int &alienLives, int &bullets, int &humanLives, point player_x, point player_y){
   static int inARow = 0;
   do{
   cout << "Player, please enter the coordinates to shoot (0-3)(x, y): ";
@@ -34,7 +38,7 @@ void shootAlien(point guess_x, point guess_y, point alien_x, point alien_y, int 
     alienLives -= 2;
     bullets--;
     inARow++;
-    generateAlienPosition(alien_x, alien_y);
+    generateAlienPosition(alien_x, alien_y, player_x, player_y);
     cout <<"The alien's position has been refreshed to a new location." << endl;
     
   }else if((abs(guess_x.m_XCoord - alien_x.m_XCoord)  == 1 && guess_y.m_YCoord == alien_y.m_YCoord) || (guess_x.m_XCoord == alien_x.m_XCoord) && abs(guess_y.m_YCoord - alien_y.m_YCoord) == 1){
@@ -42,7 +46,7 @@ void shootAlien(point guess_x, point guess_y, point alien_x, point alien_y, int 
     alienLives -=1;
     bullets--;
     inARow++;
-    generateAlienPosition(alien_x, alien_y);
+    generateAlienPosition(alien_x, alien_y, player_x, player_y);
     cout <<"The alien's position has been refreshed to a new location." << endl;
   }
   else {
@@ -61,22 +65,28 @@ void shootAlien(point guess_x, point guess_y, point alien_x, point alien_y, int 
 }
 
 void acquirePowerUp(point power_x, point power_y, point player_x, point player_y, int & humanLives, int & bullets, int &immunity_duration, string &powerUp){
-  cout << "The powerup posisition is ("<< power_x.m_XCoord << ", " << power_y.m_YCoord << ")" << endl;
-  static int powerup_type = rand() % 5; //used for 80/20% calculation
+  cout << "The powerup position is ("<< power_x.m_XCoord << ", " << power_y.m_YCoord << ")" << endl;
+   int powerup_type = rand() % 5; //used for 80/20% calculation
   if(power_x.m_XCoord == player_x.m_XCoord && power_y.m_YCoord == player_y.m_YCoord){//if player is in the same spot as the powerup
     if(powerup_type <5){// for non sheild power up
       if(((power_x.m_XCoord + power_y.m_YCoord) % 2) == 0){// even
         humanLives += (power_x.m_XCoord + power_y.m_YCoord);
+        cout << "Power up! You aquired additional lives! You now have "<< humanLives << " lives." << endl;
         powerUp ="lives";
+        generatePowerUpPosition(power_x, power_y);
         return;
       }else if(((power_x.m_XCoord + power_y.m_YCoord) % 2) == 1){//odd
         bullets += (power_x.m_XCoord + power_y.m_YCoord);
+        cout << "Power up! you aquired additional bullets! You now have "<< bullets << " bullets." << endl;
         powerUp ="bullets";
+        generatePowerUpPosition(power_x, power_y);
         return;
       }
+      generatePowerUpPosition(power_x,power_y);
     }else if(powerup_type ==5){//sheild powerup
       powerUp ="sheild";
       immunity_duration +=2;
+      generatePowerUpPosition(power_x, power_y);
       return;
     }
   }
@@ -85,16 +95,14 @@ void acquirePowerUp(point power_x, point power_y, point player_x, point player_y
   return;
 }
 
-void shootPlayer(point player_x, point player_y, point alien_x, point alien_y, int &humanLives, int &immunity_duration){
-  static point player_last_x = player_x;
-  static point player_last_y = player_y;
+void shootPlayer(point player_last_x, point player_last_y, point alien_x, point alien_y, int &humanLives, int &immunity_duration){
   cout<<"The Alien is attacking you!" << endl;
   if(immunity_duration == 0){ // if no sheild then run alien shoots player
   if(alien_x.m_XCoord == player_last_x.m_XCoord && alien_y.m_YCoord == player_last_y.m_YCoord){
     cout << "You got hit by the alien and lost 2 lives" << endl;
     humanLives -= 2;
     return ;
-  }else if((abs(alien_x.m_XCoord - player_last_x.m_XCoord)  == 1 && alien_y.m_YCoord == player_last_y.m_YCoord) || (alien_x.m_XCoord == player_last_x.m_XCoord) && abs(alien_y.m_YCoord - player_last_y.m_YCoord) == 1){
+  }else if((abs(player_last_x.m_XCoord - alien_x.m_XCoord)  == 1 && player_last_y.m_YCoord == alien_y.m_YCoord) || (player_last_x.m_XCoord == alien_x.m_XCoord) && abs(player_last_y.m_YCoord - alien_y.m_YCoord) == 1){
     cout << "The alien was close! You lost 1 life." << endl;
     humanLives -= 1;
     return;
@@ -126,9 +134,9 @@ void displayGameStatus(int humanLives, int alienLives, int &bullets, string powe
   {
     for(int j = 0; j < 4; j++)
     {
-      if (player_x.m_XCoord == i && player_y.m_YCoord == j){
+      if (player_x.m_XCoord == j && player_y.m_YCoord == i){
           cout << "P";
-      }else if(alien_x.m_XCoord == i && player_y.m_YCoord == j){
+      }else if(alien_x.m_XCoord == j && alien_y.m_YCoord == i){
           cout << "A";
       }else{
           cout << "o";

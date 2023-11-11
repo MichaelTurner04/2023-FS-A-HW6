@@ -13,18 +13,14 @@ int main() {
   string powerUp;
 
   cout << "Welcome to GalDef - The Galactic Defender! \nThe game starts now!\nYou have 5 lives and 15 bullets to begin with, the alien has 10 lives and will try to attack you! Goodluck, Let the game begin…!!!\n" << endl;
-
+  generatePowerUpPosition(power_x, power_y);
   do{
     cout << "\nRound "<<++round << endl;
-    generatePlayerPosition(player_x, player_y);
-    generateAlienPosition(alien_x, alien_y);
-    while( (player_x.m_XCoord == alien_x.m_XCoord) && (player_y.m_YCoord == alien_y.m_YCoord)){ //make sure Player and alien arent on same spot
-      generateAlienPosition(alien_x, alien_y);
-    }
-    generatePowerUpPosition(power_x, power_y);
+    generatePlayerPosition(player_x, player_y,player_last_x, player_last_y);
+    generateAlienPosition(alien_x, alien_y,player_x, player_y);
     
     for(int i=0; i<2; i++){ //runs shoot alien function 2 times 
-      shootAlien(guess_x, guess_y, alien_x, alien_y, alienLives, bullets,humanLives);
+      shootAlien(guess_x, guess_y, alien_x, alien_y, alienLives, bullets,humanLives, player_x, player_y);
     }
     acquirePowerUp(power_x, power_y,  player_x, player_y, humanLives, bullets, immunity_duration, powerUp); //checks if player is on the same spot as the power up
 if(round != 1){ //if not the first round, the alien gets a turn to damage the player based on its last position
